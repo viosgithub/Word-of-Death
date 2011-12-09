@@ -1,13 +1,19 @@
-#!/usr/bin/env python2.6
+#coding:utf8
 from docx import *
 import sys
 import wx
 import optparse
 import os
 
-def getParaText(path):
-    doc = opendocx(path)
-    return getdocumenttext(doc)
+def getWordText(path):
+    os.system("xdoc2txt.exe -f %s" % path)
+    textFile = os.path.splitext(path)[0] + ".txt"
+    r = open(textFile,"r")
+    ret = r.read()
+    r.close()
+    os.remove(textFile)
+    return ret
+
 if __name__ == '__main__':        
     app = wx.App(False)
     frame = wx.Frame(None,-1,"Word of Death",size=(600,800))
@@ -25,13 +31,16 @@ if __name__ == '__main__':
     parser.add_option("-a","--all",dest = "all")
     (opts,args) = parser.parse_args()
     if not opts.all:
+        if len(args) == 1:
+            print u"--allで全ワードファイルの差分取得"
+            sys.exit(-1)
         for i in range(2,len(sys.argv)):
             oldFileList.append(sys.argv[i])
-        newparatextlist = getParaText(sys.argv[1])
-        oldparatextlistSet = [getParaText(oldFileList[x]) for x in range(len(oldFileList))]
+        newparatextlist = getWordText(sys.argv[1])
+        oldparatextlistSet = [getWordText(oldFileList[x]) for x in range(len(oldFileList))]
     else:
         import glob
-        docList = glob.glob("*.docx")
+        docList = glob.glob("*.doc*")
         fTimes = []
         fileTimeDict = dict()
         for f in docList:
@@ -42,8 +51,8 @@ if __name__ == '__main__':
 
         print fileTimeDict
 
-        newparatextlist = getParaText(fileTimeDict[fTimes[0]])
-        oldparatextlistSet = [getParaText(fileTimeDict[fTimes[x]]) for x in range(1,len(fTimes))]
+        newparatextlist = getWordText(fileTimeDict[fTimes[0]])
+        oldparatextlistSet = [getWordText(fileTimeDict[fTimes[x]]) for x in range(1,len(fTimes))]
 
 
     
